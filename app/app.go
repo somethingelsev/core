@@ -107,10 +107,12 @@ import (
 	customevidence "github.com/terra-money/core/custom/evidence"
 	customfeegrant "github.com/terra-money/core/custom/feegrant"
 	customgov "github.com/terra-money/core/custom/gov"
+	customibc "github.com/terra-money/core/custom/ibc"
 	custommint "github.com/terra-money/core/custom/mint"
 	customparams "github.com/terra-money/core/custom/params"
 	customslashing "github.com/terra-money/core/custom/slashing"
 	customstaking "github.com/terra-money/core/custom/staking"
+	customtransfer "github.com/terra-money/core/custom/transfer"
 	customupgrade "github.com/terra-money/core/custom/upgrade"
 
 	"github.com/terra-money/core/x/market"
@@ -170,10 +172,10 @@ var (
 		customcrisis.AppModuleBasic{},
 		customslashing.AppModuleBasic{},
 		customfeegrant.AppModuleBasic{},
-		ibc.AppModuleBasic{},
+		customibc.AppModuleBasic{},
 		customupgrade.AppModuleBasic{},
 		customevidence.AppModuleBasic{},
-		transfer.AppModuleBasic{},
+		customtransfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		market.AppModuleBasic{},
