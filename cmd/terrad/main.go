@@ -108,6 +108,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 		&wasmconfig.Config{BaseConfig: wasmconfig.BaseConfig{
 			ContractQueryGasLimit:    viper.GetUint64(wasmconfig.FlagContractQueryGasLimit),
 			ContractLoggingWhitelist: viper.GetString(wasmconfig.FlagContractLoggingWhitelist),
+			NumReadWasmer:            viper.GetUint32(wasmconfig.FlagNumReadWasmer),
 		}},
 		baseapp.SetPruning(pruningOpts),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),

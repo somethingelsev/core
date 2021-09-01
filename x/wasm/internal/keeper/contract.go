@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 
+	wasm "github.com/CosmWasm/go-cosmwasm"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -325,7 +326,7 @@ func (k Keeper) queryToStore(ctx sdk.Context, contractAddress sdk.AccAddress, ke
 	return
 }
 
-func (k Keeper) queryToContract(ctx sdk.Context, contractAddr sdk.AccAddress, queryMsg []byte) ([]byte, error) {
+func (k Keeper) queryToContract(ctx sdk.Context, contractAddr sdk.AccAddress, queryMsg []byte, wasmers ...*wasm.Wasmer) ([]byte, error) {
 	ctx.GasMeter().ConsumeGas(types.InstanceCost, "Loading CosmWasm module: query")
 
 	codeInfo, contractStorePrefix, err := k.getContractDetails(ctx, contractAddr)
@@ -333,7 +334,13 @@ func (k Keeper) queryToContract(ctx sdk.Context, contractAddr sdk.AccAddress, qu
 		return nil, err
 	}
 
-	queryResult, gasUsed, err := k.wasmer.Query(
+	// when the vm is given, use that given vm
+	wasmer := k.wasmer
+	if len(wasmers) != 0 {
+		wasmer = wasmers[0]
+	}
+
+	queryResult, gasUsed, err := wasmer.Query(
 		codeInfo.CodeHash.Bytes(),
 		queryMsg,
 		contractStorePrefix,

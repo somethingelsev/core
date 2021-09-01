@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -105,4 +106,52 @@ func TestQueryParams(t *testing.T) {
 	err := cdc.UnmarshalJSON(res, &params)
 	require.NoError(t, err)
 	require.Equal(t, input.WasmKeeper.GetParams(input.Ctx), params)
+}
+
+func TestLegacyMultipleGoroutines(t *testing.T) {
+	input := CreateTestInput(t)
+	ctx, accKeeper, keeper := input.Ctx, input.AccKeeper, input.WasmKeeper
+	cdc := codec.New()
+
+	deposit := sdk.NewCoins(sdk.NewInt64Coin("denom", 100000))
+	topUp := sdk.NewCoins(sdk.NewInt64Coin("denom", 5000))
+	creator := createFakeFundedAccount(ctx, accKeeper, deposit.Add(deposit...))
+	anyAddr := createFakeFundedAccount(ctx, accKeeper, topUp)
+
+	wasmCode, err := ioutil.ReadFile("./testdata/contract.wasm")
+	require.NoError(t, err)
+
+	contractID, err := keeper.StoreCode(ctx, creator, wasmCode)
+	require.NoError(t, err)
+
+	_, _, bob := keyPubAddr()
+	initMsg := InitMsg{
+		Verifier:    anyAddr,
+		Beneficiary: bob,
+	}
+	initMsgBz, err := json.Marshal(initMsg)
+	require.NoError(t, err)
+
+	addr, err := keeper.InstantiateContract(ctx, contractID, creator, initMsgBz, deposit, true)
+	require.NoError(t, err)
+
+	querier := NewQuerier(keeper)
+
+	wg := &sync.WaitGroup{}
+	testCases := 1000
+	wg.Add(testCases)
+	for n := 0; n < testCases; n++ {
+		go func() {
+			// query contract []byte(`{"verifier":{}}`)
+			bz, err := cdc.MarshalJSON(types.NewQueryContractParams(addr, []byte(`{"verifier":{}}`)))
+			require.NoError(t, err)
+
+			res, err := querier(ctx, []string{types.QueryContractStore}, abci.RequestQuery{Data: []byte(bz)})
+			require.NoError(t, err)
+			require.Equal(t, fmt.Sprintf(`{"verifier":"%s"}`, anyAddr.String()), string(res))
+
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }

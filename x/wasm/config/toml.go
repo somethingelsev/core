@@ -22,6 +22,9 @@ contract-query-gas-limit = "{{ .BaseConfig.ContractQueryGasLimit }}"
 # are stored in the local storage. To keep all logs,
 # a node operator can set "*" (not recommended).
 contract-logging-whitelist = "{{ .BaseConfig.ContractLoggingWhitelist }}"
+
+# The number of read wasmer
+num-read-wasmer = "{{ .BaseConfig.NumReadWasmer }}"
 `
 
 var configTemplate *template.Template

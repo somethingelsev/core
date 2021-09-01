@@ -11,6 +11,7 @@ const (
 const (
 	FlagContractQueryGasLimit    = "contract-query-gas-limit"
 	FlagContractLoggingWhitelist = "contract-logging-whitelist"
+	FlagNumReadWasmer            = "num-read-wasmer"
 )
 
 // DBDir used to store wasm data to
@@ -28,6 +29,9 @@ type BaseConfig struct {
 	// are stored in the local storage. To keep all logs,
 	// a node operator can set "*" (not recommended).
 	ContractLoggingWhitelist string `mapstructure:"contract-logging-whitelist"`
+
+	// The number of read vm
+	NumReadWasmer uint32 `mapstructure:"num-read-wasmer"`
 }
 
 // Config defines the server's top level configuration
@@ -42,6 +46,7 @@ func DefaultConfig() *Config {
 		BaseConfig: BaseConfig{
 			ContractQueryGasLimit:    defaultContractQueryGasLimit,
 			ContractLoggingWhitelist: "",
+			NumReadWasmer:            1,
 		},
 		loggingAll: false,
 	}

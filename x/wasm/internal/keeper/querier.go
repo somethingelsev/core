@@ -116,8 +116,15 @@ func queryContractStore(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
+	wasmer, err := keeper.getWasmer(ctx.Context())
+	if err != nil {
+		return nil, err
+	}
+
 	// recover from out-of-gas panic
 	defer func() {
+		keeper.putWasmer(wasmer)
+
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
 			// TODO: Use ErrOutOfGas instead of ErrorOutOfGas which would allow us
@@ -142,7 +149,7 @@ func queryContractStore(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 		}
 	}()
 
-	bz, err = keeper.queryToContract(ctx, params.ContractAddress, params.Msg)
+	bz, err = keeper.queryToContract(ctx, params.ContractAddress, params.Msg, wasmer)
 
 	return
 }

@@ -7,6 +7,7 @@ import (
 
 	wasm "github.com/CosmWasm/go-cosmwasm"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/semaphore"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -34,7 +35,10 @@ type Keeper struct {
 
 	router sdk.Router
 
-	wasmer    wasm.Wasmer
+	wasmer              *wasm.Wasmer
+	wasmerReadPool      []*wasm.Wasmer
+	wasmerReadSemaphore *semaphore.Weighted
+
 	querier   types.Querier
 	msgParser types.MsgParser
 
@@ -61,20 +65,32 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey,
 		paramspace = paramspace.WithKeyTable(types.ParamKeyTable())
 	}
 
+	numReadWasmer := wasmConfig.NumReadWasmer
+	wasmerReadPool := make([]*wasm.Wasmer, numReadWasmer)
+	for i := uint32(0); i < numReadWasmer; i++ {
+		wasmerReadPool[i], err = wasm.NewWasmer(filepath.Join(homeDir, config.DBDir), supportedFeatures, 0)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	return Keeper{
-		storeKey:         storeKey,
-		cdc:              cdc,
-		paramSpace:       paramspace,
-		wasmer:           *wasmer,
-		accountKeeper:    accountKeeper,
-		bankKeeper:       bankKeeper,
-		supplyKeeper:     supplyKeeper,
-		treasuryKeeper:   treasuryKeeper,
-		router:           router,
-		wasmConfig:       wasmConfig,
-		loggingWhitelist: wasmConfig.WhitelistToMap(),
-		msgParser:        types.NewModuleMsgParser(),
-		querier:          types.NewModuleQuerier(),
+		storeKey:            storeKey,
+		cdc:                 cdc,
+		paramSpace:          paramspace,
+		wasmer:              wasmer,
+		wasmerReadPool:      wasmerReadPool,
+		wasmerReadSemaphore: semaphore.NewWeighted(int64(numReadWasmer)),
+		accountKeeper:       accountKeeper,
+		bankKeeper:          bankKeeper,
+		supplyKeeper:        supplyKeeper,
+		treasuryKeeper:      treasuryKeeper,
+		router:              router,
+		wasmConfig:          wasmConfig,
+		loggingWhitelist:    wasmConfig.WhitelistToMap(),
+		msgParser:           types.NewModuleMsgParser(),
+		querier:             types.NewModuleQuerier(),
 	}
 }
 
