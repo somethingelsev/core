@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"path/filepath"
+	"sync"
 
 	wasm "github.com/CosmWasm/go-cosmwasm"
 	"github.com/spf13/viper"
@@ -38,6 +39,7 @@ type Keeper struct {
 	wasmer              *wasm.Wasmer
 	wasmerReadPool      []*wasm.Wasmer
 	wasmerReadSemaphore *semaphore.Weighted
+	wasmerReadMutex     *sync.Mutex
 
 	querier   types.Querier
 	msgParser types.MsgParser
@@ -82,6 +84,7 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey,
 		wasmer:              wasmer,
 		wasmerReadPool:      wasmerReadPool,
 		wasmerReadSemaphore: semaphore.NewWeighted(int64(numReadWasmer)),
+		wasmerReadMutex:     &sync.Mutex{},
 		accountKeeper:       accountKeeper,
 		bankKeeper:          bankKeeper,
 		supplyKeeper:        supplyKeeper,
