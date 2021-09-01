@@ -68,6 +68,10 @@ func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey,
 	}
 
 	numReadWasmer := wasmConfig.NumReadWasmer
+	if numReadWasmer == 0 {
+		numReadWasmer = 1
+	}
+
 	wasmerReadPool := make([]*wasm.Wasmer, numReadWasmer)
 	for i := uint32(0); i < numReadWasmer; i++ {
 		wasmerReadPool[i], err = wasm.NewWasmer(filepath.Join(homeDir, config.DBDir), supportedFeatures, 0)
