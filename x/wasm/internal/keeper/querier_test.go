@@ -109,6 +109,11 @@ func TestQueryParams(t *testing.T) {
 }
 
 func TestLegacyMultipleGoroutines(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "wasm")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+	viper.Set(flags.FlagHome, tempDir)
+
 	input := CreateTestInput(t)
 	ctx, accKeeper, keeper := input.Ctx, input.AccKeeper, input.WasmKeeper
 	cdc := codec.New()
