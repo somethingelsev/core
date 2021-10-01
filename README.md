@@ -25,7 +25,7 @@ Full-node software implementing the Terra protocol<br/><br/>
   ·
   <a href="https://pkg.go.dev/github.com/terra-money/core?tab=subdirectories">Go API</a>
   ·
-  <a href="https://swagger.terra.money/">REST API</a>
+  <a href="https://lcd.terra.dev/swagger/">REST API</a>
   ·
   <a href="https://docs.terra.money/#sdks-for-developers">SDKs</a>
   ·
@@ -251,7 +251,7 @@ Modify `/etc/security/limits.conf` to raise the `nofile` capability.
 
 - `26657` is the default port for the RPC protocol. This port is used for querying / sending transactions. In other words, this port needs to be opened for serving queries from `terracli`. It is safe to _NOT_ to open this port to the public unless you are planning to run a public node.
 
-- `1317` is the default port for [Lite Client Daemon](https://docs.terra.money/terracli/lcd.html) (LCD), which can be enabled at `~/.terra/config/app.toml`. LCD provides HTTP RESTful API layer to allow applications and services to interact with your `terrad` instance through RPC. Check the [Terra REST API](https://swagger.terra.money) for usage examples. You don't need to open this port unless you have use of it.
+- `1317` is the default port for [Lite Client Daemon](https://docs.terra.money/terracli/lcd.html) (LCD), which can be enabled at `~/.terra/config/app.toml`. LCD provides HTTP RESTful API layer to allow applications and services to interact with your `terrad` instance through RPC. Check the [Terra REST API](https://lcd.terra.dev/swagger/) for usage examples. You don't need to open this port unless you have use of it.
 
 - `26660` is the default port for interacting with the [Prometheus](https://prometheus.io) database which can be used for monitoring the environment. This port is not opened in the default configuration.
 
